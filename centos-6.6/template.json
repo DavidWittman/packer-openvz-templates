@@ -1,0 +1,54 @@
+{
+    "variables": {
+        "user": "root",
+        "password": "zomgpleasechangeme",
+        "disk_size": "15000",
+        "domain": ""
+    },
+
+    "builders":
+    [
+        {
+            "name": "centos66",
+
+            "type": "qemu",
+            "qemuargs": [ [ "-m", "1024m" ] ],
+            "format": "qcow2",
+            "headless": true,
+            "accelerator": "kvm",
+            "disk_size": "{{ user `disk_size`}}",
+
+            "iso_url": "https://archive.kernel.org/centos-vault/6.6/isos/x86_64/CentOS-6.6-x86_64-minimal.iso",
+            "iso_checksum": "eb3c8be6ab668e6d83a118323a789e6c",
+            "iso_checksum_type": "md5",
+
+            "http_directory": "http",
+
+            "ssh_username": "{{user `user`}}",
+            "ssh_password": "{{user `password`}}",
+            "ssh_wait_timeout": "600s",
+            "shutdown_command": "echo '{{user `password`}}'|sudo -S shutdown -h now",
+
+            "boot_wait": "2s",
+            "boot_command": [
+                   "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>"
+            ]
+        }
+    ],
+
+    "provisioners": [
+        {
+            "type": "shell",
+            "scripts": [
+                "scripts/base.sh",
+                "scripts/openvz.sh",
+                "scripts/cleanup.sh"
+            ]
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "tarball"
+        }
+    ]
+}
